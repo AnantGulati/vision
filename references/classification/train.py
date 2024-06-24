@@ -53,6 +53,13 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, arg
 
         acc1, acc5 = utils.accuracy(output, target, topk=(1, 5))
         batch_size = image.shape[0]
+        with torch.no_grad():
+            l2_params = torch.sqrt(sum(
+                torch.vdot(p.flatten(), p.flatten())
+                for p in model.parameters()
+                if p.requires_grad
+            ))
+        metric_logger.update(l2_params=l2_params.item())
         metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
         metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
         metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
